@@ -16,14 +16,14 @@ pipeline {
     }
   stage('Build Docker Image'){
     steps{
-      sh 'docker build -t dileep95/dileep-spring:$BUILD_NUMBER .'
+      sh 'docker build -t dorigintech/ci-cd-demo:$BUILD_NUMBER .'
     }
   }
   stage('Docker Container'){
     steps{
-      withCredentials([usernameColonPassword(credentialsId: 'docker_dileep_creds', variable: 'DOCKER_PASS')]) {
-      sh 'docker push dileep95/dileep-spring:$BUILD_NUMBER'
-	  sh 'docker run -d -p 8050:8050 --name SpringbootApp dileep95/dileep-spring:$BUILD_NUMBER'
+      withCredentials([usernameColonPassword(credentialsId: 'docker_sudhanlogics_creds', variable: 'DOCKER_PASS')]) {
+      sh 'docker push sudhanlogics/ci-cd-demo:$BUILD_NUMBER'
+	  sh 'docker run -d -p 8050:8050 --name SpringbootApp sudhanlogics/ci-cd-demo:$BUILD_NUMBER'
     }
     }
   }  
