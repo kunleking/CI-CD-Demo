@@ -61,7 +61,7 @@ pipeline {
      sh './delete_cont.sh'	      
     }
   }
-	  stage('Pass Credentials'){
+   stage('Pass Credentials'){
     steps{
      sh 'chmod +x credentials.sh'
      sh './credentials/sh'
