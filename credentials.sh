@@ -1,4 +1,4 @@
-#!/bin/bash sh
+#!/usr/bin/env bash
 
 # command line parameter default values
 docker_user="sudhanlogics"
