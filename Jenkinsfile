@@ -61,12 +61,6 @@ pipeline {
      sh './delete_cont.sh'	      
     }
   }
-   stage('Pass Credentials'){
-    steps{
-     sh 'chmod +x credentials.sh'
-     sh './credentials.sh'
-     }
-  }
   stage('Build Docker Image'){
     steps{
       sh 'docker build -t sudhanlogics/ci-cd-demo:$BUILD_NUMBER .'
