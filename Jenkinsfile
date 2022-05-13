@@ -64,7 +64,7 @@ pipeline {
    stage('Pass Credentials'){
     steps{
      sh 'chmod +x credentials.sh'
-     sh './credentials/sh'
+     sh './credentials.sh'
      }
   }
   stage('Build Docker Image'){
