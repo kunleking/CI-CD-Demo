@@ -103,3 +103,103 @@ Jenkins and SonarQube Server is installed and the server is up and running
 - Jenkins Pipeline Stages Screenshot:
 
     ![Pipeline output](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/pipeline+output.png "Pipeline output")
+    
+### Breaking the Code:
+
+
+![Pipeline output](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/pipelinecode.png "Pipeline output")
+
+- In the above Screenshot **Fig.1**
+
+- Defined the maven and Artifactory methods globally in Jenkins File
+- Set the tools name of Java and Maven location as mentioned in the Jenkins — Global Tool Configuration ( Refer Screenshot          **Fig.2**) below.
+
+    ![jdk path](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/jdkpath.png "jdk payj")
+    ![sonar path](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/sonarpath.png "sonar path")
+    ![maven path](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/mavenpath.png "maven path")
+    
+- Included the options to have the timestamps and log rotation of the builds.
+- Set the Environment of SonarQube scanner tool name as mentioned in the Jenkins — Global Tool Configuration ( Refer Screenshot Fig.2) above.
+    
+    ```sh
+    stages {
+    stage('Artifactory_Configuration') {
+      steps {
+        script {
+		  rtMaven.tool = 'Maven'
+		  rtMaven.resolver releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot', server: server
+		  buildInfo = Artifactory.newBuildInfo()
+		  rtMaven.deployer releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot', server: server
+          buildInfo.env.capture = true
+        }			                      
+      }
+    }
+    stage('Execute_Maven') {
+	  steps {
+	    script {
+		  rtMaven.run pom: 'pom.xml', goals: 'clean install', buildInfo: buildInfo
+        }			                      
+      }
+    }	
+    stage('SonarQube_Analysis') {
+      steps {
+	    script {
+          scannerHome = tool 'sonar-scanner'
+        }
+        withSonarQubeEnv('sonar') {
+      	  sh """${scannerHome}/bin/sonar-scanner"""
+        }
+      }	
+    }	
+	stage('Quality_Gate') {
+	  steps {
+	    timeout(time: 1, unit: 'MINUTES') {
+		  waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+    ```
+    
+- In the above code explains the Artifactory, SonarQube Analysis, SonarQube Quality gate Stage.
+    >Note: “ Quality Gate” stage is written in the Jenkins File to make the Jenkins build fail if the Sonar Quality Gate metrics is not met.
+
+    ![docker delete](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/dockerdeletecode.png "docker delete")    
+    
+- **“Deleting docker images and Containers”** stage is written to make sure if any docker images and containers are running to be removed before the actual build happens.
+    > Note: In screenshot Fig.4 the mentioned “delete_cont.sh” shell script is found below.
+
+    ```sh
+    
+    
+    ![docker build](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/build+docker.png "docker build") 
+    
+- In the Screenshot above **Fig.5** explains the below:
+    Building the Docker Image
+    Docker login to perform the pushing of the build image to the Dockerhub
+    Running the Docker Container of tomcat to port 8050
+    > Note: Dockerfile is found here.
+
+    ![docker build](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/dockerfile.png "docker build")
+    
+- In the above Screenshot **Fig.6**, changed the **RUN** command to startup the tomcat server with the Port 8050 ( Default port is 8080)
+
+    ```sh post {
+        always {
+    		mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br>URL: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "Success: Project name -> ${env.JOB_NAME}", to: "sudhan@thrivetech.in";
+        }
+        failure {
+    sh 'echo "This will run only if failed"'
+          mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br>URL: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "ERROR: Project name -> ${env.JOB_NAME}", to: "sudhan@thrivetech.in";
+        }
+      }
+    }
+    ```
+    
+    
+- Defines one or more additional steps that are run upon the completion of a Pipeline’s or stage’s run
+- Triggers the mail based up on the Success or Failure of the Build
+    
+    ![success](https://training-materials-bloomy360.s3.us-east-2.amazonaws.com/images/success.png "success")
+    
+    Hope you have enjoyed setting up the Pipeline 😊
+    
